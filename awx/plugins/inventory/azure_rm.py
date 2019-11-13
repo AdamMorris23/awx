@@ -565,6 +565,7 @@ class AzureInventory(object):
         self._compute_client = rm.compute_client
         self._network_client = rm.network_client
         self._resource_client = rm.rm_client
+        self._credentials = rm.credentials
         self._security_groups = None
 
         self.subscriptions = []
@@ -661,15 +662,15 @@ class AzureInventory(object):
         else:
             # get all subscriptions within the tenant
             try:
-                subscription_client = SubscriptionClient(credentials)
-                subscriptions = self.subscription_client.subscriptions.list()
+                subscription_client = SubscriptionClient(self._credentials)
+                subscriptions = subscription_client.subscriptions.list()
             except Exception as exc:
                 sys.exit("Error: fetching subscriptions - {0}".format(str(exc)))
 
             # get all VMs within the subscription
             try:
                 for subscription in subscriptions:
-                    virtual_machines.extend(self._compute_client.virtual_machines.list_all())
+                    virtual_machines.extend(subscription._compute_client.virtual_machines.list_all())
             except Exception as exc:
                 sys.exit("Error: fetching virtual machines - {0}".format(str(exc)))
 
